@@ -15,8 +15,7 @@ const App = () => {
         console.log('promise fulfilled')
         setNotes(response.data)
       })
-  },[])
-  console.log('render', notes.length, 'notes')
+  }, [])
 
   const handleNoteChange = (event) => {
     console.log(event.target.value)
@@ -47,13 +46,13 @@ const App = () => {
         </button>
       </div>
       <ul>
-        {notesToShow.map((note) => 
+        {notesToShow.map((note) =>
           <Note key={note.id} note={note} />
         )}
       </ul>
       <form onSubmit={addNote}>
-        <input 
-          value={newNote} 
+        <input
+          value={newNote}
           onChange={handleNoteChange}
         />
         <button type='submit'>save</button>
