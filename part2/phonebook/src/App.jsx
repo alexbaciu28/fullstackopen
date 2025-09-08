@@ -1,8 +1,8 @@
 import { useState, useEffect } from 'react'
-import axios from 'axios'
+import personService from './services/person'
 import Filter from './components/Filter'
 import PersonForm from './components/PersonForm'
-import Persons from './components/Persons'
+import Person from './components/Person'
 
 const App = () => {
   const [persons, setPersons] = useState([])
@@ -11,10 +11,10 @@ const App = () => {
   const [newFilter, setNewFilter] = useState('')
 
   useEffect(() => {
-    axios
-      .get('http://localhost:3001/phonebook')
-      .then(response => {
-        setPersons(response.data)
+    personService
+      .getAll()
+      .then(initialPersons => {
+        setPersons(initialPersons)
       })
   },[])
 
@@ -22,16 +22,21 @@ const App = () => {
     event.preventDefault()
     const personObject = {
       name: newName,
-      number: newNumber,
-      id: String(persons.length + 1)      
+      number: newNumber,     
     }
 
     if (persons.some(person => person.name === personObject.name)) {
-      window.alert(`${personObject.name} is already added to phonebook`)
+      alert(`${personObject.name} is already added to phonebook`)
       return
     }
 
-    setPersons(persons.concat(personObject))
+    personService
+      .create(personObject)
+      .then(returnedPerson => {
+        setPersons(persons.concat(returnedPerson))    
+        setNewName('')
+        setNewNumber('')
+      })
   } 
 
   const handleNameChange = (event) => {
@@ -50,6 +55,17 @@ const App = () => {
   const personsToShow = persons.filter(person => 
     person.name.toLowerCase().includes(newFilter.toLowerCase()))
 
+  const deletePersonOf = id => {
+    const person = persons.find(person => person.id === id)
+    if(!confirm(`Delete ${person.name}`))
+      return
+    personService
+      .remove(id)
+      .then(() => {
+        setPersons(persons.filter(person => person.id !== id))
+      })
+  }
+
   return (
     <div>
       <h2>Phonebook</h2>
@@ -59,7 +75,14 @@ const App = () => {
         handleNameChange={handleNameChange} newNumber={newNumber}
         handleNumberChange={handleNumberChange}/>
       <h3>Numbers</h3>
-      <Persons personsToShow={personsToShow}/>
+      {personsToShow.map(
+        person => 
+          <Person 
+            key={person.id}
+            person={person}
+            deletePerson={() => deletePersonOf(person.id)}
+          />
+      )}
     </div>
   )
 }

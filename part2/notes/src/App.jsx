@@ -67,7 +67,7 @@ const App = () => {
         </button>
       </div>
       <ul>
-        {notesToShow.map((note) =>
+        {notesToShow.map(note =>
           <Note 
             key={note.id} 
             note={note} 
