@@ -22,10 +22,8 @@ app.get('/', (request, response) => {
 })
 
 app.get('/api/notes', (request, response) => {
-  Note.find({}).then(result => {
-    result.forEach(note => {
-      console.log(note)
-    })
+  Note.find({}).then(notes => {
+    response.json(notes)
   })
 })
 
