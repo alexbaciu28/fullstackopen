@@ -46,21 +46,37 @@ app.delete('/api/persons/:id', (request, response, next) => {
       .catch(error => next(error))
 }) 
 
-app.get('/api/persons/:id', (request, response) => {
-    const id = request.params.id
-    const person = persons.find( p => p.id == id)
-
-    if(person) {
+app.get('/api/persons/:id', (request, response, next) => {
+    Person.findById(request.params.id)
+      .then(person => {
         response.json(person)
-    } else {
-        response.status(404).end()
-    }
+      })
+      .catch(error => next(error))
 }) 
 
 const generateId = () => {
     const id = Math.floor(Math.random() * 1000)
     return String(id)
 }
+
+app.put('/api/persons/:id', (request, response, next) => {
+    const { name, number } = request.body
+    
+    Person.findById(request.params.id)
+      .then(person => {
+        if(!person) {
+            return response.status(404).end()
+        }
+
+        person.name = name
+        person.number = number
+
+        return person.save().then((updatedPerson) => {
+            response.json(updatedPerson)
+        })
+      })
+      .catch(error => next(error))
+})
 
 app.post('/api/persons', (request, response) => {
     const body = request.body
@@ -91,7 +107,7 @@ const errorHandler = (error, request, response, next) => {
   console.error(error.message)
 
   if (error.name === 'CastError') {
-    return response.status(400).send({ error: 'No person with that id found' })
+    return response.status(400).send({ error: 'malformed id' })
   } 
 
   next(error)
